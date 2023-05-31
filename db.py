@@ -20,8 +20,8 @@ class DataBase:
     # KONSTRUKTOR
     def __init__(self):
         self.connection_string = ("Driver={ODBC Driver 17 for SQL Server};"
-                                  "Server=localhost"
-                                  "Database=Installing"
+                                  "Server=localhost;"
+                                  "Database=Installing;"
                                   "Trusted_Connection=yes;")
         self.connection = pyodbc.connect(self.connection_string)
         self.cursor = self.connection.cursor()
@@ -29,4 +29,4 @@ class DataBase:
     def select_english_word(self, polish_word):
         self.cursor.execute(f"SELECT EnglishWord FROM Word WHERE PolishWord = '{polish_word}'")
         data = self.cursor.fetchall()
-        return data
+        return data[0][0]
