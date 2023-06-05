@@ -29,6 +29,15 @@ body{
 .example-sentence, .polish-word{
     font-size: 18px;
 }
+.admin-info{
+    color: green;
+}
+.correct-english-word, .polish-word, .admin-info{
+    font-size: large;
+}
+.correct-english-word{
+    font-weight: bold;
+}
 .input-words{
     padding: 5px;
     font-size: medium;
@@ -40,4 +49,8 @@ body{
     padding: 10px;
     background-color: #FFFFCC;
     min-width: 300px;
+}
+.form{
+    display: flex;
+    flex-direction: center;
 }
