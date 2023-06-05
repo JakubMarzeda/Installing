@@ -11,9 +11,9 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 # TO DO:
-# Usprawnić dodawanie slowa automatycznie a nie z palca do funkcji
-# Dodać template na złą odpowiedz i dobrą żeby nie był to zwykly json tylko żeby to jakoś wyglądało
-# Przejrzeć kod poprawić błędy jak są(Opcjonalnie)
+# Zrobić mechanizm aby po kliknięciu na sutmita następny od nowa wyświetlało nam się nowe słowo i powtarzało się to powiedzmy 20 razy
+
+
 id = random.randrange(1, 31)
 
 
@@ -32,9 +32,13 @@ async def get_word(request: Request):
     answer = form.get("word")
     sentence_without_gap, english_word, polish_word = data_for_results(id)
     if check_correct_answer_word(answer, id):
-        return templates.TemplateResponse("good_result.html", {"request": request, "sentence_without_gap": sentence_without_gap, "english_word": english_word, "polish_word": polish_word})
+        return templates.TemplateResponse("good_result.html",
+                                          {"request": request, "sentence_without_gap": sentence_without_gap,
+                                           "english_word": english_word, "polish_word": polish_word})
     else:
-        return templates.TemplateResponse("bad_result.html", {"request": request, "sentence_without_gap": sentence_without_gap, "english_word": english_word, "polish_word": polish_word})
+        return templates.TemplateResponse("bad_result.html",
+                                          {"request": request, "sentence_without_gap": sentence_without_gap,
+                                           "english_word": english_word, "polish_word": polish_word})
 
 
 def check_correct_answer_word(answer, id):
