@@ -1,6 +1,7 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, status
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 from db import DataBase
 import random
 import os
@@ -10,15 +11,55 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
+
 # TO DO:
-# Zrobić mechanizm aby po kliknięciu na sutmita następny od nowa wyświetlało nam się nowe słowo i powtarzało się to powiedzmy 20 razy
+# Zrobić mechanizm aby po kliknięciu na submita następny od nowa wyświetlało nam się nowe słowo i powtarzało się to powiedzmy 20 razy
+# Dodać logowanie oraz rejestracje
+# Umożliwić adminowi dodawanie słówek, wyświetlenie obecnych userów oraz usunięcie słówek z bazy.
+@app.get("/login")
+def generate_login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request, "error": ""})
+
+
+@app.post("/login")
+async def get_login_data(request: Request):
+    db = DataBase()
+    form = await request.form()
+    email = form.get("email")
+    password = form.get("password")
+    result = db.login_user(email, password)
+    if result:
+        return RedirectResponse(url='/installing', status_code=status.HTTP_303_SEE_OTHER)
+    else:
+        return RedirectResponse(url='/register', status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.get("/register")
+def generate_register_page(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
+
+
+@app.post("/register")
+async def get_register_data(request: Request):
+    db = DataBase()
+    form = await request.form()
+    name = form.get("name")
+    lastname = form.get("lastname")
+    email = form.get("email")
+    password = form.get("password")
+
+    try:
+        db.insert_user_data(name, lastname, email, password)
+        return RedirectResponse(url='/login', status_code=status.HTTP_303_SEE_OTHER)
+    except Exception as e:
+        return templates.TemplateResponse("register.html", {"request": request, "error": "Wrong data"})
 
 
 id = random.randrange(1, 31)
 
 
-@app.get("/")
-def root(request: Request):
+@app.get("/installing")
+def generate_installing_page(request: Request):
     db = DataBase()
     polish_word = db.select_polish_word(id)
     sentence_with_gap = db.select_sentence_with_gap(id)
@@ -26,7 +67,7 @@ def root(request: Request):
                                                          "sentence_with_gap": sentence_with_gap})
 
 
-@app.post("/")
+@app.post("/installing")
 async def get_word(request: Request):
     form = await request.form()
     answer = form.get("word")

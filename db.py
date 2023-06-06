@@ -1,3 +1,7 @@
+import pyodbc as pyodbc
+import hashlib
+
+
 # WZORZEC PROJEKTOWY SINGLETONA GWARANTUJACY NAM ZE TYLKO
 # JEDNA INSTANCJA BAZY BEDZIE
 def singleton(class_):
@@ -9,9 +13,6 @@ def singleton(class_):
         return instances[class_]
 
     return getinstance
-
-
-import pyodbc as pyodbc
 
 
 @singleton
@@ -30,15 +31,31 @@ class DataBase:
         self.cursor.execute(f"SELECT EnglishWord FROM Word WHERE Id = '{id}'")
         data = self.cursor.fetchall()
         return data[0][0]
+
     def select_polish_word(self, id):
         self.cursor.execute(f"SELECT PolishWord FROM Word WHERE Id = '{id}'")
         data = self.cursor.fetchall()
         return data[0][0]
+
     def select_sentence_with_gap(self, id):
         self.cursor.execute(f"SELECT SentenceWithGap FROM Word WHERE Id = '{id}'")
         data = self.cursor.fetchall()
         return data[0][0]
+
     def select_sentence_without_gap(self, id):
         self.cursor.execute(f"SELECT SentenceWithoutGap FROM Word WHERE Id = '{id}'")
         data = self.cursor.fetchall()
         return data[0][0]
+
+    def insert_user_data(self, name, lastname, email, password):
+        hashed_password = hashlib.md5(password.encode('utf-8')).hexdigest()
+        query = f"INSERT INTO [User] (Name, Lastname, Email, Password) VALUES ('{name}', '{lastname}', '{email}', '{hashed_password}')"
+        self.cursor.execute(query)
+        self.cursor.commit()
+
+    def login_user(self, email, password):
+        hashed_password = hashlib.md5(password.encode('utf-8')).hexdigest()
+        self.cursor.execute(
+            f"SELECT Email, Password FROM [User] WHERE Email = '{email}' AND Password = '{hashed_password}'")
+        data = self.cursor.fetchall()
+        return data

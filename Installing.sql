@@ -11,18 +11,19 @@ USE [Installing]
 GO
 CREATE TABLE [User](
 	Id INT IDENTITY(1, 1),
-	Name NVARCHAR(100),
-	Lastname NVARCHAR(100),
-	Email NVARCHAR(100),
-	Password NVARCHAR(100),
+	[Name] NVARCHAR(100) NOT NULL,
+	Lastname NVARCHAR(100) NOT NULL,
+	Email NVARCHAR(100) UNIQUE NOT NULL,
+	[Password] NVARCHAR(100) CHECK(LEN([Password]) > 6) NOT NULL,
 	CONSTRAINT PK_User_Id PRIMARY KEY (Id)
 )
 CREATE TABLE Word(
 	Id INT IDENTITY(1, 1),
-	PolishWord NVARCHAR(100),
-	EnglishWord NVARCHAR(100),
-	SentenceWithGap NVARCHAR(255),
-	SentenceWithoutGap NVARCHAR(255)
+	PolishWord NVARCHAR(100) NOT NULL,
+	EnglishWord NVARCHAR(100) NOT NULL,
+	SentenceWithGap NVARCHAR(255) NOT NULL,
+	SentenceWithoutGap NVARCHAR(255) NOT NULL,
+	CONSTRAINT PK_Word_Id PRIMARY KEY (Id)
 )
 
 INSERT INTO Word(PolishWord, EnglishWord, SentenceWithGap, SentenceWithoutGap)
@@ -60,4 +61,4 @@ INSERT INTO Word(PolishWord, EnglishWord, SentenceWithGap, SentenceWithoutGap)
 		('pieni¹dze', 'money', 'He saved up enough _____ to buy a new car.', 'He saved up enough money to buy a new car.')
 
 
-SELECT * FROM Word
+SELECT * FROM [User]
