@@ -7,15 +7,17 @@ import random
 import os
 
 app = FastAPI()
-
+id = random.randrange(1, 31)
+iteration = 0
+good_answer = 0
+user = ""
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
 # TO DO:
-# Zrobić mechanizm aby po kliknięciu na submita następny od nowa wyświetlało nam się nowe słowo i powtarzało się to powiedzmy 20 razy
-# Dodać logowanie oraz rejestracje
-# Umożliwić adminowi dodawanie słówek, wyświetlenie obecnych userów oraz usunięcie słówek z bazy.
+# Umożliwić adminowi dodawanie słówek, wyświetlenie obecnych userów.
+# Poprawienie kodu aby był czytelniejszy
 @app.get("/login")
 def generate_login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request, "error": ""})
@@ -28,10 +30,20 @@ async def get_login_data(request: Request):
     email = form.get("email")
     password = form.get("password")
     result = db.login_user(email, password)
-    if result:
-        return RedirectResponse(url='/installing', status_code=status.HTTP_303_SEE_OTHER)
+    if db.check_logged_admin(password):
+        return RedirectResponse(url='/admin_panel', status_code=status.HTTP_303_SEE_OTHER)
     else:
-        return RedirectResponse(url='/register', status_code=status.HTTP_303_SEE_OTHER)
+        if result:
+            global iteration
+            global user
+            global good_answer
+            user = result[0][0].split("@")
+            user = user[0]
+            iteration = 0
+            good_answer = 0
+            return RedirectResponse(url='/installing', status_code=status.HTTP_303_SEE_OTHER)
+        else:
+            return RedirectResponse(url='/register', status_code=status.HTTP_303_SEE_OTHER)
 
 
 @app.get("/register")
@@ -51,15 +63,14 @@ async def get_register_data(request: Request):
     try:
         db.insert_user_data(name, lastname, email, password)
         return RedirectResponse(url='/login', status_code=status.HTTP_303_SEE_OTHER)
-    except Exception as e:
+    except Exception:
         return templates.TemplateResponse("register.html", {"request": request, "error": "Wrong data"})
-
-
-id = random.randrange(1, 31)
 
 
 @app.get("/installing")
 def generate_installing_page(request: Request):
+    global id
+    id = random.randrange(1, 31)
     db = DataBase()
     polish_word = db.select_polish_word(id)
     sentence_with_gap = db.select_sentence_with_gap(id)
@@ -69,25 +80,43 @@ def generate_installing_page(request: Request):
 
 @app.post("/installing")
 async def get_word(request: Request):
+    global iteration
+    global good_answer
     form = await request.form()
     answer = form.get("word")
     sentence_without_gap, english_word, polish_word = data_for_results(id)
     if check_correct_answer_word(answer, id):
+        good_answer += 1
+        iteration += 1
+        result = check_iteration_limit(iteration)
+        if result:
+            return result
         return templates.TemplateResponse("good_result.html",
                                           {"request": request, "sentence_without_gap": sentence_without_gap,
                                            "english_word": english_word, "polish_word": polish_word})
     else:
+        iteration += 1
+        result = check_iteration_limit(iteration)
+        if result:
+            return result
         return templates.TemplateResponse("bad_result.html",
                                           {"request": request, "sentence_without_gap": sentence_without_gap,
                                            "english_word": english_word, "polish_word": polish_word})
 
 
+@app.get("/admin_panel")
+def generate_admin_page(request: Request):
+    return templates.TemplateResponse("admin_panel.html", {"request": request})
+
+
+@app.get("/result")
+def generate_result_page(request: Request):
+    return templates.TemplateResponse("result.html", {"request": request, "good_answer": good_answer, "user": user})
+
+
 def check_correct_answer_word(answer, id):
     db = DataBase()
-    if answer == db.select_english_word(id):
-        return True
-    else:
-        return False
+    return answer == db.select_english_word(id)
 
 
 def data_for_results(id):
@@ -96,6 +125,11 @@ def data_for_results(id):
     english_word = db.select_english_word(id)
     polish_word = db.select_polish_word(id)
     return sentence_without_gap, english_word, polish_word
+
+
+def check_iteration_limit(iteration):
+    if iteration == 20:
+        return RedirectResponse(url='/result', status_code=status.HTTP_303_SEE_OTHER)
 
 
 if __name__ == "__main__":

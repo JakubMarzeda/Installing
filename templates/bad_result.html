@@ -4,21 +4,23 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <link href="{{ url_for('static', path='/bad_result.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', path='/bad_result.css') }}" rel="stylesheet">
     <title>Installing</title>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1 class="title">installing</h1>
-            <span class="example-sentence">{{sentence_without_gap}}</span>
-            <span class="correct-english-word">{{english_word}}</span>
-            <span class="polish-word">{{polish_word}}</span>
-            <span class="admin-info">Niepoprawnie</span>
-        </header>
+<div class="container">
+    <header class="header">
+        <h1 class="title">installing</h1>
+        <span class="example-sentence">{{sentence_without_gap}}</span>
+        <span class="correct-english-word">{{english_word}}</span>
+        <span class="polish-word">{{polish_word}}</span>
+        <span class="admin-info">Niepoprawnie</span>
+    </header>
+    <form action="/installing">
         <div class="form">
             <button class="submit-answer" type="submit">Następne</button>
         </div>
-    </div>
+    </form>
+</div>
 </body>
 </html>

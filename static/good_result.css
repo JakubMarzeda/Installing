@@ -21,11 +21,6 @@ body{
 .title{
     font-size: 35px;
 }
-.form > form{
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
 .example-sentence, .polish-word{
     font-size: 18px;
 }
@@ -52,5 +47,10 @@ body{
 }
 .form{
     display: flex;
-    flex-direction: center;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+.form a{
+    text-decoration: none;
 }

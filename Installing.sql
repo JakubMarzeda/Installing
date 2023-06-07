@@ -60,5 +60,4 @@ INSERT INTO Word(PolishWord, EnglishWord, SentenceWithGap, SentenceWithoutGap)
 		('szko³a', 'school', 'The children learned new things at _____.', 'The children learned new things at school.'),
 		('pieni¹dze', 'money', 'He saved up enough _____ to buy a new car.', 'He saved up enough money to buy a new car.')
 
-
 SELECT * FROM [User]

@@ -59,3 +59,16 @@ class DataBase:
             f"SELECT Email, Password FROM [User] WHERE Email = '{email}' AND Password = '{hashed_password}'")
         data = self.cursor.fetchall()
         return data
+
+    def check_logged_admin(self, password, email="admin11@admin.com"):
+        hashed_password = hashlib.md5(password.encode('utf-8')).hexdigest()
+        self.cursor.execute(
+            f"SELECT Email, Password FROM [User] WHERE Email = '{email}' AND Password = '{hashed_password}'")
+        data = self.cursor.fetchall()
+        return data
+
+    def display_users(self):
+        pass
+
+    def insert_word(self):
+        pass
