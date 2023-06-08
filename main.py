@@ -16,21 +16,25 @@ templates = Jinja2Templates(directory="templates")
 
 
 # TO DO:
-# Umożliwić adminowi dodawanie słówek, wyświetlenie obecnych userów.
-# Poprawienie kodu aby był czytelniejszy
+# Dodać autoryzację do poszczególnych endpointów
+# Dodać porównanie każdego zajerestrowanego użytkownika i jego ilość bezbłędnych nauczonych słówek albo odwrotnie(dla kazdego użytkownika dana)
+
+
+# Wygenerowania strony do zalogowania za pomocą get'a
 @app.get("/login")
 def generate_login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request, "error": ""})
 
 
+# Przechwycenie danych z formularza logowania za pomoca post'a i sprawdzenia czy użytkownik istnieje w bazie funckją check_login_user
 @app.post("/login")
 async def get_login_data(request: Request):
     db = DataBase()
     form = await request.form()
     email = form.get("email")
     password = form.get("password")
-    result = db.login_user(email, password)
-    if db.check_logged_admin(password):
+    result = db.check_login_user(email, password)
+    if db.check_login_admin(password):
         return RedirectResponse(url='/admin_panel', status_code=status.HTTP_303_SEE_OTHER)
     else:
         if result:
@@ -46,11 +50,13 @@ async def get_login_data(request: Request):
             return RedirectResponse(url='/register', status_code=status.HTTP_303_SEE_OTHER)
 
 
+# Wygenerowanie strony do zajerestrowania za pomocą get'a
 @app.get("/register")
 def generate_register_page(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
 
+# Przechwycenie danych z formularza do rejestracji i zajerestrowanie(funckja insert_user_data) i przeniesienie go na endpoint do logowania
 @app.post("/register")
 async def get_register_data(request: Request):
     db = DataBase()
@@ -67,6 +73,7 @@ async def get_register_data(request: Request):
         return templates.TemplateResponse("register.html", {"request": request, "error": "Wrong data"})
 
 
+# Wygenerowanie głównej strony do nauki słówek za pomocą get'a
 @app.get("/installing")
 def generate_installing_page(request: Request):
     global id
@@ -78,6 +85,7 @@ def generate_installing_page(request: Request):
                                                          "sentence_with_gap": sentence_with_gap})
 
 
+# Przechwycenie odpowiedzi od użytkownika i sprawdzenie czy jest ok(check_correct_answer_word) następnie wyświetlenie odpowiedzi
 @app.post("/installing")
 async def get_word(request: Request):
     global iteration
@@ -104,21 +112,40 @@ async def get_word(request: Request):
                                            "english_word": english_word, "polish_word": polish_word})
 
 
+# Wygenerowanie panela administratora który ma podgląd na użytkowników oraz możliwość dodania słówek
 @app.get("/admin_panel")
 def generate_admin_page(request: Request):
-    return templates.TemplateResponse("admin_panel.html", {"request": request})
+    db = DataBase()
+    users = db.display_users()
+    return templates.TemplateResponse("admin_panel.html", {"request": request, "users": users})
 
 
+# Przechwycenie danych które są potrzebne do wstawienia słówka do bazy które jest dodane przez admina
+@app.post("/admin_panel")
+async def get_word_to_add_database(request: Request):
+    db = DataBase()
+    form = await request.form()
+    polish_word = form.get("polish_word")
+    english_word = form.get("english_word")
+    sentence_with_gap = form.get("sentence_with_gap")
+    sentence_without_gap = form.get("sentence_without_gap")
+    db.insert_word(polish_word, english_word, sentence_with_gap, sentence_without_gap)
+    return {"Dodano słówko do bazy"}
+
+
+# Wygenerowanie strony do wyświetlenia wyniku ile słówek udało się zrobić bezbłędnie
 @app.get("/result")
 def generate_result_page(request: Request):
     return templates.TemplateResponse("result.html", {"request": request, "good_answer": good_answer, "user": user})
 
 
+# Sprawdzenie czy słówko podane przez usera jest poprawne
 def check_correct_answer_word(answer, id):
     db = DataBase()
     return answer == db.select_english_word(id)
 
 
+# Wyciągnięcie z bazy słowa po polsku, angielsku oraz zdania po danym id
 def data_for_results(id):
     db = DataBase()
     sentence_without_gap = db.select_sentence_without_gap(id)
@@ -127,6 +154,7 @@ def data_for_results(id):
     return sentence_without_gap, english_word, polish_word
 
 
+# Sprawdzenie ile razy użytkownik już podał słówko aby ograniczyć go do nauki 20 słówek
 def check_iteration_limit(iteration):
     if iteration == 20:
         return RedirectResponse(url='/result', status_code=status.HTTP_303_SEE_OTHER)

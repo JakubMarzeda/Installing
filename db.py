@@ -48,27 +48,31 @@ class DataBase:
         return data[0][0]
 
     def insert_user_data(self, name, lastname, email, password):
-        hashed_password = hashlib.md5(password.encode('utf-8')).hexdigest()
+        hashed_password = hashlib.sha256(password.encode('utf-8')).hexdigest()
         query = f"INSERT INTO [User] (Name, Lastname, Email, Password) VALUES ('{name}', '{lastname}', '{email}', '{hashed_password}')"
         self.cursor.execute(query)
         self.cursor.commit()
 
-    def login_user(self, email, password):
-        hashed_password = hashlib.md5(password.encode('utf-8')).hexdigest()
+    def check_login_user(self, email, password):
+        hashed_password = hashlib.sha256(password.encode('utf-8')).hexdigest()
         self.cursor.execute(
             f"SELECT Email, Password FROM [User] WHERE Email = '{email}' AND Password = '{hashed_password}'")
         data = self.cursor.fetchall()
         return data
 
-    def check_logged_admin(self, password, email="admin11@admin.com"):
-        hashed_password = hashlib.md5(password.encode('utf-8')).hexdigest()
+    def check_login_admin(self, password, email="admin11@admin.com"):
+        hashed_password = hashlib.sha256(password.encode('utf-8')).hexdigest()
         self.cursor.execute(
             f"SELECT Email, Password FROM [User] WHERE Email = '{email}' AND Password = '{hashed_password}'")
         data = self.cursor.fetchall()
         return data
 
     def display_users(self):
-        pass
+        self.cursor.execute("SELECT Name, Lastname, Email FROM [User] WHERE Email != 'admin11@admin.com'")
+        data = self.cursor.fetchall()
+        return data
 
-    def insert_word(self):
-        pass
+    def insert_word(self, polish_word, english_word, sentence_with_gap, sentence_without_gap):
+        self.cursor.execute(
+            f"INSERT INTO [Word] (PolishWord, EnglishWord, SentenceWithGap, SentenceWithoutGap) VALUES ('{polish_word}', '{english_word}', '{sentence_with_gap}', '{sentence_without_gap}')")
+        self.cursor.commit()

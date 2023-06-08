@@ -5,24 +5,30 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Installing</title>
-         <link href="{{ url_for('static', path='/admin_panel.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', path='/admin_panel.css') }}" rel="stylesheet">
 </head>
 <body>
-    <h1 class="title">Admin panel</h1>
-    <div class="container">
-        <div class="add-word">
-            <h2 class="add-word-title">Add word</h2>
-            <form method="post" action="" class="form">
-                <input type="text" class="input-polish-word" name="polish_word" placeholder="Polish word">
-                <input type="text" class="input-english-word" name="english_word" placeholder="English word">
-                <input type="text" class="input-sentence-with-gap" name="sentence_with_gap" placeholder="Sentence with gap">
-                <input type="text" class="sentence-without-gap" name="sentence-without-gap" placeholder="Sentence without gap">
-                <button type="submit" class="add-database-data-btn">Add to database</button>
-            </form>
-        </div>
-        <div class="display-users">
-            <h2 class="display-users-title">Users in database</h2>
-        </div>
+<h1 class="title">Admin panel</h1>
+<div class="container">
+    <div class="add-word">
+        <h2 class="add-word-title">Add word</h2>
+        <form method="post" action="" class="form">
+            <input type="text" class="input-polish-word" name="polish_word" placeholder="Polish word">
+            <input type="text" class="input-english-word" name="english_word" placeholder="English word">
+            <input type="text" class="input-sentence-with-gap" name="sentence_with_gap" placeholder="Sentence with gap">
+            <input type="text" class="sentence-without-gap" name="sentence_without_gap"
+                   placeholder="Sentence without gap">
+            <button type="submit" class="add-database-data-btn">Add to database</button>
+        </form>
     </div>
+    <div class="display-users">
+        <h2 class="display-users-title">Users in database</h2>
+        <ul>
+            {% for user in users %}
+            <li>{{ user.Name }} {{ user.Lastname }} - {{ user.Email }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
 </body>
 </html>
