@@ -18,7 +18,7 @@ templates = Jinja2Templates(directory="templates")
 # TO DO:
 # Dodać autoryzację do poszczególnych endpointów
 # Dodać porównanie każdego zajerestrowanego użytkownika i jego ilość bezbłędnych nauczonych słówek albo odwrotnie(dla kazdego użytkownika dana)
-
+# Zmienić losowanie liczby żeby każdy random był inny czyli bez powtarzania
 
 # Wygenerowania strony do zalogowania za pomocą get'a
 @app.get("/login")
@@ -41,8 +41,7 @@ async def get_login_data(request: Request):
             global iteration
             global user
             global good_answer
-            user = result[0][0].split("@")
-            user = user[0]
+            user = result[0][0]
             iteration = 0
             good_answer = 0
             return RedirectResponse(url='/installing', status_code=status.HTTP_303_SEE_OTHER)
@@ -90,6 +89,7 @@ def generate_installing_page(request: Request):
 async def get_word(request: Request):
     global iteration
     global good_answer
+    global user
     form = await request.form()
     answer = form.get("word")
     sentence_without_gap, english_word, polish_word = data_for_results(id)
@@ -98,6 +98,8 @@ async def get_word(request: Request):
         iteration += 1
         result = check_iteration_limit(iteration)
         if result:
+            db = DataBase()
+            db.insert_user_progress(good_answer, user)
             return result
         return templates.TemplateResponse("good_result.html",
                                           {"request": request, "sentence_without_gap": sentence_without_gap,

@@ -76,3 +76,22 @@ class DataBase:
         self.cursor.execute(
             f"INSERT INTO [Word] (PolishWord, EnglishWord, SentenceWithGap, SentenceWithoutGap) VALUES ('{polish_word}', '{english_word}', '{sentence_with_gap}', '{sentence_without_gap}')")
         self.cursor.commit()
+
+    def insert_user_progress(self, count_good_answer, email):
+        user_id = self.get_user_id(email)
+        if user_id:
+            self.cursor.execute(
+                f"UPDATE UserProgress SET SumGoodAnswer = SumGoodAnswer + {count_good_answer}, CountSession = CountSession + 1 WHERE UserId = {user_id}")
+            self.cursor.commit()
+        else:
+            self.cursor.execute(
+                f"INSERT INTO UserProgress(UserId, SumGoodAnswer, CountSession) VALUES((SELECT Id FROM [User] WHERE Email = '{email}'), {count_good_answer}, 1)")
+            self.cursor.commit()
+        self.connection.commit()
+
+    def get_user_id(self, email):
+        self.cursor.execute(f"SELECT Id FROM [UserProgress] WHERE Id = (SELECT Id FROM [User] WHERE Email = '{email}')")
+        row = self.cursor.fetchone()
+        if row:
+            return row[0]
+        return None
