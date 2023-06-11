@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
+import matplotlib.pyplot as plt
 from db import DataBase
 import random
 import os
@@ -162,5 +163,27 @@ def check_iteration_limit(iteration):
         return RedirectResponse(url='/result', status_code=status.HTTP_303_SEE_OTHER)
 
 
+def draw_chart_user_progress():
+    db = DataBase()
+    data = db.select_user_progress_data()
+
+    # Tworzenie list z nazwami użytkowników i ich średnimi wynikami
+    users = [row[0] for row in data]
+    averages = [round(row[1], 1) for row in data]
+
+    # Tworzenie wykresu słupkowego
+    plt.bar(users, averages)
+    plt.xlabel("Użytkownicy")
+    plt.ylabel("Średnia poprawnych odpowiedzi")
+    plt.title("Porównanie użytkowników")
+
+    # Obrócenie imion użytkowników o 90 stopni
+    plt.xticks(rotation=90)
+
+    # Zapisanie zdjęcia wykresu do a
+    plt.savefig("./static/chart.png")
+
+
+draw_chart_user_progress()
 if __name__ == "__main__":
     os.system("python -m uvicorn main:app --reload")

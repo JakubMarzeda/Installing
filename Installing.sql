@@ -68,7 +68,7 @@
 --		('szko³a', 'school', 'The children learned new things at _____.', 'The children learned new things at school.'),
 --		('pieni¹dze', 'money', 'He saved up enough _____ to buy a new car.', 'He saved up enough money to buy a new car.')
 
---SELECT * FROM [User] U INNER JOIN UserProgress US
+--SELECT Email, SumGoodAnswer, CountSession, ROUND(CAST(SumGoodAnswer AS decimal) / CountSession, 2) AS [Avarage good answer] FROM [User] U INNER JOIN UserProgress US
 --ON U.Id = US.UserId
 
 --SELECT * FROM [User]

@@ -78,7 +78,7 @@ class DataBase:
         self.cursor.commit()
 
     def insert_user_progress(self, count_good_answer, email):
-        user_id = self.get_user_id(email)
+        user_id = self.get_user_id_from_user_progress_table(email)
         if user_id:
             self.cursor.execute(
                 f"UPDATE UserProgress SET SumGoodAnswer = SumGoodAnswer + {count_good_answer}, CountSession = CountSession + 1 WHERE UserId = {user_id}")
@@ -89,9 +89,15 @@ class DataBase:
             self.cursor.commit()
         self.connection.commit()
 
-    def get_user_id(self, email):
+    def get_user_id_from_user_progress_table(self, email):
         self.cursor.execute(f"SELECT Id FROM [UserProgress] WHERE Id = (SELECT Id FROM [User] WHERE Email = '{email}')")
         row = self.cursor.fetchone()
         if row:
             return row[0]
         return None
+
+    def select_user_progress_data(self):
+        self.cursor.execute(
+            "SELECT Name, ROUND(CAST(SumGoodAnswer AS decimal) / CountSession, 1) FROM [User] U INNER JOIN UserProgress US ON U.Id = US.UserId")
+        data = self.cursor.fetchall()
+        return data
