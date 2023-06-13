@@ -7,19 +7,42 @@ from db import DataBase
 import random
 import os
 
+# Zmienne globalne
 app = FastAPI()
-id = random.randrange(1, 31)
+db = DataBase()
 iteration = 0
 good_answer = 0
 user = ""
+count_words = db.select_count_words()
+used_ids = set()
+
+# Funkcja pomocnicza do generowania unikalnego ID
+def get_unique_id(count):
+    global used_ids
+    id = random.randrange(1, count)
+    while id in used_ids:
+        id = random.randrange(1, count)
+    used_ids.add(id)
+    return id
+
+
+id = get_unique_id(count_words)
+
+# Połaczenie html i css z pythonem
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
 # TO DO:
 # Dodać autoryzację do poszczególnych endpointów
-# Dodać porównanie każdego zajerestrowanego użytkownika i jego ilość bezbłędnych nauczonych słówek albo odwrotnie(dla kazdego użytkownika dana)
 # Zmienić losowanie liczby żeby każdy random był inny czyli bez powtarzania
+
+
+# Wygenerowanie strony roota
+@app.get("/")
+def root():
+    return {"status": "ready"}
+
 
 # Wygenerowania strony do zalogowania za pomocą get'a
 @app.get("/login")
@@ -30,7 +53,6 @@ def generate_login_page(request: Request):
 # Przechwycenie danych z formularza logowania za pomoca post'a i sprawdzenia czy użytkownik istnieje w bazie funckją check_login_user
 @app.post("/login")
 async def get_login_data(request: Request):
-    db = DataBase()
     form = await request.form()
     email = form.get("email")
     password = form.get("password")
@@ -59,7 +81,6 @@ def generate_register_page(request: Request):
 # Przechwycenie danych z formularza do rejestracji i zajerestrowanie(funckja insert_user_data) i przeniesienie go na endpoint do logowania
 @app.post("/register")
 async def get_register_data(request: Request):
-    db = DataBase()
     form = await request.form()
     name = form.get("name")
     lastname = form.get("lastname")
@@ -77,8 +98,8 @@ async def get_register_data(request: Request):
 @app.get("/installing")
 def generate_installing_page(request: Request):
     global id
-    id = random.randrange(1, 31)
-    db = DataBase()
+    global count_words
+    id = get_unique_id(count_words)
     polish_word = db.select_polish_word(id)
     sentence_with_gap = db.select_sentence_with_gap(id)
     return templates.TemplateResponse("main_page.html", {"request": request, "polish_word": polish_word,
@@ -99,7 +120,6 @@ async def get_word(request: Request):
         iteration += 1
         result = check_iteration_limit(iteration)
         if result:
-            db = DataBase()
             db.insert_user_progress(good_answer, user)
             return result
         return templates.TemplateResponse("good_result.html",
@@ -118,7 +138,6 @@ async def get_word(request: Request):
 # Wygenerowanie panela administratora który ma podgląd na użytkowników oraz możliwość dodania słówek
 @app.get("/admin_panel")
 def generate_admin_page(request: Request):
-    db = DataBase()
     users = db.display_users()
     return templates.TemplateResponse("admin_panel.html", {"request": request, "users": users})
 
@@ -126,7 +145,6 @@ def generate_admin_page(request: Request):
 # Przechwycenie danych które są potrzebne do wstawienia słówka do bazy które jest dodane przez admina
 @app.post("/admin_panel")
 async def get_word_to_add_database(request: Request):
-    db = DataBase()
     form = await request.form()
     polish_word = form.get("polish_word")
     english_word = form.get("english_word")
@@ -144,13 +162,11 @@ def generate_result_page(request: Request):
 
 # Sprawdzenie czy słówko podane przez usera jest poprawne
 def check_correct_answer_word(answer, id):
-    db = DataBase()
     return answer == db.select_english_word(id)
 
 
 # Wyciągnięcie z bazy słowa po polsku, angielsku oraz zdania po danym id
 def data_for_results(id):
-    db = DataBase()
     sentence_without_gap = db.select_sentence_without_gap(id)
     english_word = db.select_english_word(id)
     polish_word = db.select_polish_word(id)
@@ -164,7 +180,6 @@ def check_iteration_limit(iteration):
 
 
 def draw_chart_user_progress():
-    db = DataBase()
     data = db.select_user_progress_data()
 
     # Tworzenie list z nazwami użytkowników i ich średnimi wynikami

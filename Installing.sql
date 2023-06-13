@@ -75,4 +75,6 @@
 
 --SELECT * FROM UserProgress
 
+--SELECT * FROM Word
+
 --INSERT INTO UserProgress(UserId, SumGoodAnswer, CountSession) VALUES((SELECT Id FROM [User] WHERE Email = 'jakub.marzeda11@gmail.com'), 17, 1)

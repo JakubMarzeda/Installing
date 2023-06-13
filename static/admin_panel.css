@@ -14,8 +14,8 @@ body{
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-height: 600px;
-    width: 500px;
+    min-height: 500px;
+    min-width: 400px;
     border: 1px solid black;
 }
 .form{
